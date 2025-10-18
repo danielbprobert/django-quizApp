@@ -1,0 +1,11 @@
+<h3>Players joined ({{ quiz.attempts.count }})</h3>
+<div class="grid-2">
+  {% for a in quiz.attempts.all %}
+    <div class="option selected" style="cursor:default;display:flex;align-items:center;gap:.5rem;font-size:1.2rem">
+      <span style="font-size:1.5rem;line-height:1">{{ a.avatar|default:"🎯" }}</span>
+      <span>{% if a.name %}{{ a.name }}{% else %}Player {{ a.id }}{% endif %}</span>
+    </div>
+  {% empty %}
+    <p>No one yet… share code <strong>{{ quiz.access_code }}</strong></p>
+  {% endfor %}
+</div>

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Results — {{ attempt.quiz.title }}{% endblock %}
+{% block content %}
+  <article class="quiz-card">
+    <h2>Final Results</h2>
+    <p>Score: <strong>{{ attempt.score }}</strong> / {{ total }}</p>
+    <a role="button" href="{% url 'quiz:home' %}">Back to home</a>
+  </article>
+{% endblock %}

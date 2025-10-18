@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Join — Quiz{% endblock %}
+{% block content %}
+  <article class="quiz-card">
+    <h2>Join quiz</h2>
+    {% if error %}<mark class="wrong">{{ error }}</mark>{% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+
+      <label>6-digit code
+        <input name="code" value="{{ code|default:'' }}" maxlength="6" pattern="\d{6}" required>
+      </label>
+
+      <div class="grid">
+        <label>Your name
+          <div style="display:flex; gap:.5rem; align-items:center;">
+            <span id="name-wrapper"
+                  hx-get="{% url 'quiz:frag_silly_name' %}"
+                  hx-trigger="load"
+                  hx-target="#name-wrapper"
+                  hx-swap="innerHTML">
+              <!-- _silly_name_input.html will load here -->
+              <input id="name-input" name="name" value="{{ suggested|default:'' }}" required>
+            </span>
+            <button type="button"
+                    class="secondary"
+                    hx-get="{% url 'quiz:frag_silly_name' %}"
+                    hx-target="#name-wrapper"
+                    hx-swap="innerHTML"
+                    aria-label="Shuffle name">🔀</button>
+          </div>
+        </label>
+      </div>
+
+      <fieldset>
+        <legend>Choose your avatar</legend>
+        <div class="grid-2">
+          {% for emo in avatars %}
+            <label class="option" style="display:flex;gap:.5rem;align-items:center;justify-content:center;font-size:1.6rem">
+              <input type="radio" name="avatar" value="{{ emo }}" {% if forloop.first %}checked{% endif %}>
+              <span>{{ emo }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <button type="submit" style="margin-top:1rem">Enter lobby</button>
+    </form>
+  </article>
+{% endblock %}

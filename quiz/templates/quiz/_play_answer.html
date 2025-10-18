@@ -1,0 +1,86 @@
+<div>
+  <h3>Question {{ idx|add:1 }} / {{ total }}</h3>
+
+  <div class="timer" aria-hidden="true"><div id="bar"></div></div>
+  <p class="small">Time left: <strong id="count">{{ remaining }}</strong>s</p>
+
+  {% if q.text %}<p>{{ q.text }}</p>{% endif %}
+  {% if q.image %}
+    <div class="question-media">
+      <img src="{{ q.image.url }}" alt="Question image">
+    </div>
+  {% endif %}
+
+  <form id="answer-form"
+        hx-post="{% url 'quiz:frag_play' attempt.id %}"
+        hx-target="#panel"
+        hx-swap="innerHTML"
+        hx-trigger="change">  {# <-- auto-post when a radio changes #}
+    {% csrf_token %}
+
+    <div class="grid-2">
+      {% for opt in q.options.all %}
+        <label class="option {% if current_answer and current_answer.selected_option_id == opt.id %}selected{% endif %}"
+               style="{% if current_answer %}cursor:default{% endif %}">
+          <div>
+            <input type="radio"
+                   name="option"
+                   value="{{ opt.id }}"
+                   {% if current_answer and current_answer.selected_option_id == opt.id %}checked{% endif %}
+                   {% if current_answer %}disabled{% endif %}>  {# lock after first answer #}
+            {% if opt.text %}{{ opt.text }}{% endif %}
+          </div>
+          {% if opt.image %}
+            <div class="media">
+              <img src="{{ opt.image.url }}" alt="Option image">
+            </div>
+          {% endif %}
+        </label>
+      {% endfor %}
+    </div>
+  </form>
+
+  {% if current_answer %}
+    <p class="small"><em>Answer saved! Waiting for reveal…</em></p>
+  {% else %}
+    <p class="small"><em>Tap/click an option to lock in your answer.</em></p>
+  {% endif %}
+
+  <script>
+    (function(){
+      // highlight selected card
+      document.querySelectorAll('.option input[type="radio"]').forEach(function(r){
+        r.addEventListener('change', function(){
+          document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+          var lbl = r.closest('.option');
+          if (lbl) lbl.classList.add('selected');
+        });
+      });
+
+      // countdown + single refresh when the phase ends
+      var remaining = {{ remaining|default:0 }};
+      var bar = document.getElementById('bar');
+      var count = document.getElementById('count');
+
+      if (bar) {
+        var s = remaining;
+        bar.style.width = '100%';
+        var iv = setInterval(function(){
+          s -= 1;
+          if (s <= 0) { s = 0; clearInterval(iv); }
+          if (count) count.textContent = s;
+          if (remaining > 0) {
+            var pct = Math.max(0, (s / remaining) * 100);
+            bar.style.width = pct + '%';
+          }
+        }, 1000);
+      }
+
+      if (remaining > 0) {
+        setTimeout(function(){
+          htmx.ajax('GET', "{% url 'quiz:frag_play' attempt.id %}", '#panel');
+        }, remaining * 1000);
+      }
+    })();
+  </script>
+</div>

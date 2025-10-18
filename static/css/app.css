@@ -1,0 +1,141 @@
+/* =========================
+   BRAND TOKENS (EDIT THESE)
+   ========================= */
+:root {
+  /* Fonts */
+  --brand-font-headings: "YOUR_HEADING_FONT", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --brand-font-body:     "YOUR_BODY_FONT",    system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+
+  /* Colors */
+  --brand-primary:       #1a455f;     /* e.g. #5A2BBF */
+  --brand-text:          #111111;
+  --brand-bg:            #ffffff;
+  --brand-muted:         #E8E8F0;
+  --brand-on-primary:    #ffffff;
+
+  /* Optional accent you can use in custom components */
+  --brand-accent:        #DC325F;
+}
+
+/* ======================================================
+   MAP TOKENS → PICO VARIABLES (higher specificity block)
+   ====================================================== */
+:root,
+[data-theme="light"] {
+  /* Typography */
+  --pico-font-family: var(--brand-font-body);
+
+  /* Colors used by Pico components */
+  --pico-color:                 var(--brand-text);
+  --pico-background-color:      var(--brand-bg);
+  --pico-primary:               var(--brand-primary);
+  --pico-primary-inverse:       var(--brand-on-primary);
+  --pico-primary-underline:     color-mix(in srgb, var(--brand-primary) 35%, transparent);
+  --pico-muted-border-color:    var(--brand-muted);
+  --pico-muted-color:           color-mix(in srgb, var(--brand-text) 60%, white);
+  --pico-mark-background-color: color-mix(in srgb, var(--brand-primary) 18%, white);
+}
+
+/* ==================
+   GLOBAL TYPOGRAPHY
+   ================== */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--brand-font-headings) !important;
+  color: var(--brand-text);
+}
+
+.img-fluid { display:block; max-width:100%; height:auto; }
+
+/* Links pick up brand color clearly */
+a {
+  color: var(--brand-primary) !important;
+  text-decoration-color: var(--pico-primary-underline) !important;
+}
+a:hover {
+  color: var(--brand-on-primary) !important;
+  text-decoration-color: var(--brand-primary) !important;
+}
+
+/* Buttons */
+button, [role="button"], .button, input[type="submit"] {
+  background-color: var(--brand-primary) !important;
+  border-color: var(--brand-primary) !important;
+  color: var(--brand-on-primary) !important;
+  border-radius: 999px;
+}
+
+/* =========
+   QUIZ UI
+   ========= */
+.brand { letter-spacing: .5px; font-weight: 700; color: var(--brand-primary); }
+
+.quiz-card {
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: 12px;
+  padding: 1rem;
+  background: #fff;
+}
+
+.option {
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: 12px;
+  padding: .75rem;
+  transition: transform .08s ease, border-color .2s ease, box-shadow .2s ease;
+  cursor: pointer;
+}
+.option:hover { transform: translateY(-1px); }
+.option input[type="radio"] { margin-right: .5rem; }
+.option.selected {
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-primary) 25%, transparent) !important;
+}
+
+.timer { height: 10px; background: var(--pico-muted-border-color); border-radius: 999px; overflow: hidden; }
+.timer > div { height: 100%; background: var(--brand-primary) !important; width: 100%; transition: width 1s linear; }
+
+.grid-2 { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.small { font-size: .9rem; opacity: .8; }
+.right { color: var(--pico-success, #198754); }
+.wrong { color: var(--pico-del, #C62828); }
+
+.panel-tint {
+  background: color-mix(in srgb, var(--brand-primary) 6%, white);
+  border: 1px solid color-mix(in srgb, var(--brand-primary) 18%, var(--brand-muted));
+}
+
+.question-media {
+  width: 100%;
+  max-width: 720px;           /* cap large questions */
+  aspect-ratio: 16 / 9;       /* tweak if you prefer 4/3 or 1/1 */
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f6f7fb;        /* subtle backdrop */
+  border: 1px solid var(--pico-muted-border-color);
+  margin: .5rem 0 1rem;
+}
+.question-media > img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;         /* show entire question image without cropping */
+}
+
+/* Option cards: consistent size; crop to fill to avoid layout jumps */
+.option .media {
+  width: 100%;
+  aspect-ratio: 4 / 3;         /* adjust to your taste (1/1, 16/9, etc.) */
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f6f7fb;
+  border: 1px solid var(--pico-muted-border-color);
+  margin-top: .5rem;
+}
+.option .media > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;           /* crop edges to keep uniform tile size */
+}
+
+/* Make the whole option label a block to prevent text/image overlap */
+.option { display:block; }
+.option label { display:block; width:100%; }
+.option input[type="radio"] { margin-right:.5rem; vertical-align: middle; }

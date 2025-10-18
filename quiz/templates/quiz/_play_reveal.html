@@ -1,0 +1,71 @@
+<div>
+  <h3>Reveal — Question {{ idx|add:1 }} / {{ total }}</h3>
+
+  {% if q.text %}<p>{{ q.text }}</p>{% endif %}
+  {% if q.image %}
+    <div class="question-media">
+      <img src="{{ q.image.url }}" alt="Question image">
+    </div>
+  {% endif %}
+
+<article class="quiz-card" style="padding:.75rem 1rem; margin:.5rem 0;">
+  <strong>Correct answer</strong><br>
+  {% if correct_opt.text %}{{ correct_opt.text }}{% endif %}
+  {% if correct_opt.image %}
+    <div class="media" style="margin-top:.5rem">
+      <img src="{{ correct_opt.image.url }}" alt="Correct option">
+    </div>
+  {% endif %}
+</article>
+
+  {% if q.explanation %}
+    <article class="quiz-card panel-tint" style="padding:.75rem 1rem; margin:.5rem 0;">
+      <strong>Why this is correct</strong>
+      <p style="margin:.5rem 0 0">
+        {{ q.explanation|linebreaksbr }}
+      </p>
+    </article>
+  {% endif %}
+
+  <div class="grid-2">
+    <div>
+      <h4 class="right">Got it right ({{ right|length }})</h4>
+      <ul>
+        {% for n in right %}<li>{{ n|default:"Player" }}</li>{% empty %}<li>No one</li>{% endfor %}
+      </ul>
+    </div>
+    <div>
+      <h4 class="wrong">Got it wrong ({{ wrong|length }})</h4>
+      <ul>
+        {% for n in wrong %}<li>{{ n|default:"Player" }}</li>{% empty %}<li>No one</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <div class="timer" aria-hidden="true"><div id="bar"></div></div>
+  <!--<p class="small">Next question in <strong id="count">{{ remaining }}</strong>s…</p>-->
+
+  <script>
+    (function(){
+      var remaining = {{ remaining|default:0 }};
+      var bar = document.getElementById('bar');
+      var count = document.getElementById('count');
+      if (bar) {
+        var s = remaining;
+        var iv = setInterval(function(){
+          s -= 1;
+          if (s <= 0) { s = 0; clearInterval(iv); }
+          if (count) count.textContent = s;
+          if (remaining > 0) {
+            var pct = Math.max(0, (s/remaining) * 100);
+            bar.style.width = pct + '%';
+          }
+        }, 1000);
+        bar.style.width = '100%';
+      }
+      if (remaining > 0) {
+        setTimeout(function(){ htmx.ajax('GET', "{% url 'quiz:frag_play' attempt.id %}", '#panel'); }, remaining * 1000);
+      }
+    })();
+  </script>
+</div>

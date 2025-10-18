@@ -1,0 +1,26 @@
+<div>
+  <h2>Final Results</h2>
+
+  {% if winners %}
+    <p>🏆 Winner{% if winners|length > 1 %}s{% endif %} ({{ top_score }} pts):
+      {% for w in winners %}{{ w.name|default:'Player ' }}{% if not w.name %}{{ w.id }}{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}
+    </p>
+  {% else %}
+    <p>No participants.</p>
+  {% endif %}
+
+  <h3>Leaderboard</h3>
+  <ol>
+    {% for row in leaderboard %}
+      <li>
+        <span style="font-size:1.3rem">{{ row.attempt.avatar|default:"🎯" }}</span>
+        &nbsp;{{ row.attempt.name|default:'Player ' }}{% if not row.attempt.name %}{{ row.attempt.id }}{% endif %}
+        — {{ row.attempt.score }} pts •
+        {{ row.correct }}/{{ row.answered }} correct
+        ({{ row.pct }}%)
+      </li>
+    {% endfor %}
+  </ol>
+
+  <p class="small">Percent is based on questions each player answered.</p>
+</div>

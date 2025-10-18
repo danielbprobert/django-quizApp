@@ -1,0 +1,37 @@
+{% load static %}
+<!doctype html>
+<html data-theme="light" lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{% block title %}Quiz{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=YourHeadingFont:wght@600;700&family=YourBodyFont:wght@400;500&display=swap" rel="stylesheet">
+    
+
+    <!-- Pico.css (class-light, no build step) -->
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.12" crossorigin="anonymous"></script>
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <header class="container">
+      {% include "_partials/nav.html" %}
+    </header>
+
+    <main class="container">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="container small" style="margin-top:2rem">
+      <hr>
+      <p>Made with Django • <span class="brand">v1.0</span></p>
+    </footer>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

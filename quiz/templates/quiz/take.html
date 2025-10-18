@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Question</title></head>
+<body>
+  <h3>Question {{ idx|add:1 }}{% if total %}/{{ total }}{% endif %}</h3>
+
+  {% if question.text %}
+    <p>{{ question.text }}</p>
+  {% endif %}
+  {% if question.image %}
+    <p><img src="{{ question.image.url }}" alt="Question image" style="max-width:600px;height:auto"></p>
+  {% endif %}
+
+  {% if error %}<p style="color:red">{{ error }}</p>{% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+    {% for opt in question.options.all %}
+      <div style="margin-bottom:8px">
+        <label>
+          <input type="radio" name="option" value="{{ opt.id }}" required>
+          {% if opt.text %}{{ opt.text }}{% endif %}
+          {% if opt.image %}<br><img src="{{ opt.image.url }}" style="max-width:400px;height:auto">{% endif %}
+        </label>
+      </div>
+    {% endfor %}
+    <button type="submit">Next</button>
+  </form>
+</body>
+</html>
