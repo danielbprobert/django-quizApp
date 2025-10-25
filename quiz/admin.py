@@ -51,7 +51,7 @@ def start_quiz(modeladmin, request, queryset):
     if not started and skipped == 0:
         messages.info(request, "No quizzes were started.")
 
-@admin.action(description="Reset selected quiz to WAITING")
+@admin.action(description="Reset selected quiz")
 def reset_quiz(modeladmin, request, queryset):
     """
     Resets quizzes to WAITING phase without deleting attempts or answers.
@@ -104,11 +104,6 @@ class FourOptionsOneCorrectFormset(BaseInlineFormSet):
 
                 # read order from cleaned_data or fallback to initial (since field is disabled / readonly)
                 order = form.cleaned_data.get("order") or form.initial.get("order")
-                if order not in {1, 2, 3, 4}:
-                    raise ValidationError("Answer option orders must be 1, 2, 3, and 4.")
-                if order in orders:
-                    raise ValidationError("Answer option orders must be unique (1–4).")
-                orders.add(order)
 
         if count != 4:
             raise ValidationError("Each question must have exactly 4 options.")

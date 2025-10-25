@@ -6,7 +6,9 @@ from django.http import HttpResponseBadRequest
 from django.db import transaction
 from django.http import HttpResponse
 from django.utils import timezone
+from django.conf import settings
 from django.urls import reverse
+
 from .models import Quiz, Question, AnswerOption, Attempt, Answer, PHASE_WAITING, PHASE_ANSWER, PHASE_REVEAL, PHASE_FINISHED, AVATARS
 
 ADJECTIVES = [
@@ -46,7 +48,7 @@ def home(request):
             "top_score": top_score,
         })
 
-    return render(request, "quiz/home.html", {"recent": recent})
+    return render(request, "quiz/home.html", {"recent": recent, "version": settings.VERSION})
 
 def join_by_code(request):
     if request.method == "POST":
