@@ -144,9 +144,9 @@ if not DEBUG:
     REFERRER_POLICY = "same-origin"
 
     # Once you confirm HTTPS is solid, consider HSTS (be sure before enabling):
-    # SECURE_HSTS_SECONDS = 31536000
-    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    # SECURE_HSTS_PRELOAD = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
 
 # --------------------------------------------------------------------------------------
 # Logging (quiet but helpful in prod)
