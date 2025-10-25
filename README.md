@@ -32,7 +32,7 @@ Players join with a unique 6-digit code, choose a fun nickname and avatar, and c
 - **Backend:** Django 5 + Channels (InMemory backend)
 - **Frontend:** Pico.css + HTMX for reactive updates
 - **Database:** SQLite 3
-- **Deployment:** Ubuntu 22 LTS (AWS EC2), Gunicorn + Nginx
+- **Deployment:** Ubuntu 24 LTS (AWS EC2), Gunicorn + Nginx
 - **Python:** 3.11+
 
 ---
@@ -215,12 +215,14 @@ quiz-app/
 
 - Admin URL and IP restrictions are controlled via `.env`
 - HTTPS enforced in production (`DEBUG=False`)
-- HSTS activated after SSL validation
-- No Redis or Postgres required
+- No Redis or Postgres required (FUTURE MAYBE)
 - SQLite database located at `BASE_DIR/db.sqlite3`
 - In-memory Channels layer (single Gunicorn worker recommended)
 
 ---
+
+## Additional Script
+- Has a deploy.sh to support with pull / reset on AWS un ./deploy.sh
 
 ## 📜 License
 

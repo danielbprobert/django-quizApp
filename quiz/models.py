@@ -64,6 +64,12 @@ class Quiz(models.Model):
         if self.phase == PHASE_REVEAL:
             return max(0, REVEAL_SECONDS - self.seconds_in_phase())
         return 0
+    
+    def has_rounds(self) -> bool:
+        return self.rounds.exists()
+
+    def questions_in_round(self, round_: "Round"):
+        return self.questions.filter(round=round_).order_by("order", "id")
 
     def question_count(self):
         return self.questions.count()
@@ -118,9 +124,48 @@ class Quiz(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.access_code})"
+    
+
+class Round(models.Model):
+    quiz = models.ForeignKey(
+        "Quiz", on_delete=models.CASCADE, related_name="rounds"
+    )
+    name = models.CharField(max_length=200)  # required
+    description = models.TextField(blank=True)  # optional
+    image = models.ImageField(upload_to="rounds/", blank=True, null=True)  # optional
+    order = models.PositiveIntegerField(default=0, help_text="Display order")
+
+    class Meta:
+        ordering = ["order", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["quiz", "name"], name="uniq_round_name_per_quiz"
+            )
+        ]
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.image:
+            # keep aspect ratio; don't force crop for round cover art
+            resize_and_optional_crop(
+                self.image, max_size=(1600, 1600), crop_ratio=None, quality=85, format_hint="JPEG"
+            )
+            super().save(update_fields=["image"])
+
+    def __str__(self):
+        return f"Round: {self.name} ({self.quiz})"
 
 class Question(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions')
+    round = models.ForeignKey(
+        Round,
+        on_delete=models.SET_NULL,
+        related_name="questions",
+        blank=True,
+        null=True,
+        help_text="Optional: assign this question to a round.",
+    )
+    
     text = models.TextField(blank=True)
     image = models.ImageField(upload_to='questions/', blank=True, null=True)
     explanation = models.TextField(blank=True)
@@ -134,6 +179,9 @@ class Question(models.Model):
         if not self.text and not self.image:
             raise ValidationError("Provide question text and/or an image.")
 
+        if self.round and self.round.quiz_id != self.quiz_id:
+            raise ValidationError("Question's round must belong to the same quiz.")
+        
         # Validate answer options rule when question already has options in memory
         options = list(self.options.all()) if self.pk else []
         if options:
@@ -150,7 +198,8 @@ class Question(models.Model):
             super().save(update_fields=["image"])  # persist optimized file
 
     def __str__(self):
-        return f"Q{self.pk} in {self.quiz}"
+        r = f" • {self.round.name}" if self.round_id else ""
+        return f"Q{self.pk} in {self.quiz}{r}"
 
 class AnswerOption(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
@@ -171,7 +220,6 @@ class AnswerOption(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         if self.image:
-            # For options we want uniform tiles → center-crop to 4:3
             resize_and_optional_crop(self.image, max_size=(1200,1200), crop_ratio=(4,3), quality=85, format_hint="JPEG")
             super().save(update_fields=["image"])
 

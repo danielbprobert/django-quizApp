@@ -5,6 +5,7 @@ from django.forms.models import BaseInlineFormSet
 
 from .models import (
     Quiz,
+    Round,             # NEW
     Question,
     AnswerOption,
     Attempt,
@@ -17,20 +18,12 @@ from .utils import broadcast_quiz
 
 @admin.action(description="Start selected quiz")
 def start_quiz(modeladmin, request, queryset):
-    """
-    Starts the selected quizzes at question index 0, enters ANSWER phase,
-    timestamps the start, and broadcasts the phase change so clients update instantly.
-    """
     started = 0
     skipped = 0
-
     for quiz in queryset:
         if quiz.questions.count() == 0:
             skipped += 1
-            messages.warning(
-                request,
-                f"Quiz '{quiz.title}' has no questions – not started."
-            )
+            messages.warning(request, f"Quiz '{quiz.title}' has no questions – not started.")
             continue
 
         quiz.phase = PHASE_ANSWER
@@ -39,11 +32,7 @@ def start_quiz(modeladmin, request, queryset):
         quiz.started_at = quiz.started_at or timezone.now()
         quiz.save(update_fields=["phase", "current_index", "phase_started_at", "started_at"])
 
-        # Notify connected clients (lobby & play pages) to refresh immediately.
-        broadcast_quiz(
-            quiz.id,
-            {"kind": "phase", "phase": quiz.phase, "idx": quiz.current_index}
-        )
+        broadcast_quiz(quiz.id, {"kind": "phase", "phase": quiz.phase, "idx": quiz.current_index})
         started += 1
 
     if started:
@@ -51,12 +40,9 @@ def start_quiz(modeladmin, request, queryset):
     if not started and skipped == 0:
         messages.info(request, "No quizzes were started.")
 
+
 @admin.action(description="Reset selected quiz")
 def reset_quiz(modeladmin, request, queryset):
-    """
-    Resets quizzes to WAITING phase without deleting attempts or answers.
-    Use this if something gets stuck. You can clear attempts in the Attempt list if desired.
-    """
     reset = 0
     for quiz in queryset:
         quiz.phase = PHASE_WAITING
@@ -78,15 +64,12 @@ def reset_quiz(modeladmin, request, queryset):
     else:
         messages.info(request, "No quizzes were reset.")
 
+
 class FourOptionsOneCorrectFormset(BaseInlineFormSet):
     def add_fields(self, form, index):
         super().add_fields(form, index)
-
-        # Lock the order field in the UI if it exists
         if 'order' in form.fields:
             form.fields['order'].disabled = True
-
-        # Only set initial order for real inline rows, not the empty template
         if index is not None and not form.instance.pk:
             form.initial.setdefault('order', index + 1)
 
@@ -94,17 +77,11 @@ class FourOptionsOneCorrectFormset(BaseInlineFormSet):
         super().clean()
         count = 0
         correct = 0
-        orders = set()
-
         for form in self.forms:
             if form.cleaned_data and not form.cleaned_data.get("DELETE", False):
                 count += 1
                 if form.cleaned_data.get("is_correct"):
                     correct += 1
-
-                # read order from cleaned_data or fallback to initial (since field is disabled / readonly)
-                order = form.cleaned_data.get("order") or form.initial.get("order")
-
         if count != 4:
             raise ValidationError("Each question must have exactly 4 options.")
         if correct != 1:
@@ -112,12 +89,10 @@ class FourOptionsOneCorrectFormset(BaseInlineFormSet):
 
     def save_new(self, form, commit=True):
         obj = super().save_new(form, commit=False)
-        # persist the order even if the field was disabled/read-only
         obj.order = form.cleaned_data.get("order") or form.initial.get("order")
         if commit:
             obj.save()
         return obj
-
 
 
 class AnswerOptionInline(admin.TabularInline):
@@ -128,18 +103,49 @@ class AnswerOptionInline(admin.TabularInline):
     formset = FourOptionsOneCorrectFormset
     fields = ("order", "text", "image", "is_correct")
     readonly_fields = ("order",)
+
     def get_queryset(self, request):
-        # keep them listed in order
         qs = super().get_queryset(request)
         return qs.order_by("order")
 
 
+# --- NEW: Round inline under Quiz ---
+class RoundInline(admin.StackedInline):
+    model = Round
+    extra = 0
+    fields = ("order", "name", "description", "image")
+    ordering = ("order", "id")
+    show_change_link = True
+
+
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ("id", "quiz", "order")
-    list_filter = ("quiz",)
+    list_display = ("id", "quiz", "round", "order")
+    list_filter = ("quiz", "round")
     inlines = [AnswerOptionInline]
-    fields = ("quiz", "order", "text", "image", "explanation")
+    fields = ("quiz", "round", "order", "text", "image", "explanation")
+
+    # Limit the "round" choices to rounds belonging to the selected quiz
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        from django.forms import ModelChoiceField
+
+        # default to no filtering
+        qs = Round.objects.all()
+
+        if obj and obj.quiz_id:
+            qs = qs.filter(quiz=obj.quiz_id)
+        else:
+            # When adding, try to read the selected quiz from GET/POST
+            quiz_id = request.GET.get("quiz") or request.POST.get("quiz")
+            if quiz_id:
+                qs = qs.filter(quiz_id=quiz_id)
+
+        if "round" in form.base_fields:
+            form.base_fields["round"] = ModelChoiceField(
+                queryset=qs, required=False, empty_label="— No round —"
+            )
+        return form
 
 
 @admin.register(Quiz)
@@ -148,6 +154,15 @@ class QuizAdmin(admin.ModelAdmin):
     readonly_fields = ("access_code", "phase", "current_index", "phase_started_at", "started_at", "finished_at")
     search_fields = ("title", "access_code")
     actions = [start_quiz, reset_quiz]
+    inlines = [RoundInline]   # <-- create/manage rounds directly under a quiz
+
+
+# (Optional) Keep Round visible in admin on its own page too
+@admin.register(Round)
+class RoundAdmin(admin.ModelAdmin):
+    list_display = ("name", "quiz", "order")
+    list_filter = ("quiz",)
+    search_fields = ("name",)
 
 
 @admin.register(Attempt)
