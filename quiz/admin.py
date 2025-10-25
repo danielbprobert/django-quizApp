@@ -79,19 +79,52 @@ def reset_quiz(modeladmin, request, queryset):
         messages.info(request, "No quizzes were reset.")
 
 class FourOptionsOneCorrectFormset(BaseInlineFormSet):
+    def add_fields(self, form, index):
+        """
+        - Prefill new forms with order 1..4.
+        - Disable the order field so it can’t be edited.
+        """
+        super().add_fields(form, index)
+        if 'order' in form.fields:
+            form.fields['order'].disabled = True  # lock it in the UI
+        if not form.instance.pk:
+            # only for new inline rows
+            form.initial.setdefault('order', index + 1)
+
     def clean(self):
         super().clean()
         count = 0
         correct = 0
+        orders = set()
+
         for form in self.forms:
             if form.cleaned_data and not form.cleaned_data.get("DELETE", False):
                 count += 1
                 if form.cleaned_data.get("is_correct"):
                     correct += 1
+
+                # verify order is 1..4 and unique
+                order = form.cleaned_data.get("order") or form.initial.get("order")
+                if order not in {1, 2, 3, 4}:
+                    raise ValidationError("Answer option orders must be 1, 2, 3, and 4.")
+                if order in orders:
+                    raise ValidationError("Answer option orders must be unique (1–4).")
+                orders.add(order)
+
         if count != 4:
             raise ValidationError("Each question must have exactly 4 options.")
         if correct != 1:
             raise ValidationError("Exactly one option must be marked correct.")
+
+    def save_new(self, form, commit=True):
+        """
+        Ensure the order is actually persisted even though the field is disabled.
+        """
+        obj = super().save_new(form, commit=False)
+        obj.order = form.cleaned_data.get("order") or form.initial.get("order")
+        if commit:
+            obj.save()
+        return obj
 
 
 class AnswerOptionInline(admin.TabularInline):
@@ -101,6 +134,11 @@ class AnswerOptionInline(admin.TabularInline):
     min_num = 4
     formset = FourOptionsOneCorrectFormset
     fields = ("order", "text", "image", "is_correct")
+    readonly_fields = ("order",)
+    def get_queryset(self, request):
+        # keep them listed in order
+        qs = super().get_queryset(request)
+        return qs.order_by("order")
 
 
 @admin.register(Question)
