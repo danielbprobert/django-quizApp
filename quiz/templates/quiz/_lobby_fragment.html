@@ -9,3 +9,25 @@
     <p>No one yet… share code <strong>{{ quiz.access_code }}</strong></p>
   {% endfor %}
 </div>
+
+{% comment %} Rounds summary {% endcomment %}
+{% if total_questions %}
+  <h3>Rounds & questions</h3>
+  <ul style="margin-top: .5rem;">
+    {% if round_summaries %}
+      {% for r in round_summaries %}
+        <li>
+          <strong>{{ r.name }}</strong>
+          — {{ r.question_count }} question{{ r.question_count|pluralize }}
+        </li>
+      {% endfor %}
+    {% else %}
+      <li><em>No rounds configured</em> — {{ total_questions }} question{{ total_questions|pluralize }}</li>
+    {% endif %}
+  </ul>
+  <p style="margin:.25rem 0 1rem 0;">
+    <small>Total: {{ total_questions }} question{{ total_questions|pluralize }}</small>
+  </p>
+{% else %}
+  <p><em>No questions yet.</em></p>
+{% endif %}

@@ -1,5 +1,5 @@
 import random
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Count, Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.cache import never_cache
 from django.http import HttpResponseBadRequest
@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
 
-from .models import Quiz, Question, AnswerOption, Attempt, Answer, PHASE_WAITING, PHASE_ANSWER, PHASE_REVEAL, PHASE_FINISHED, AVATARS
+from .models import Quiz, Round, Question, AnswerOption, Attempt, Answer, PHASE_WAITING, PHASE_ANSWER, PHASE_REVEAL, PHASE_FINISHED, AVATARS
 
 ADJECTIVES = [
     "Swift","Bouncy","Sneaky","Cheerful","Curious","Zesty","Witty","Brave",
@@ -85,6 +85,26 @@ def frag_lobby(request, attempt_id):
     quiz = attempt.quiz
     quiz.maybe_tick()
 
+    rounds_qs = (
+        Round.objects
+        .filter(quiz=quiz)
+        .annotate(question_count=Count("questions"))
+        .order_by("order", "id")
+    )
+
+    unassigned_count = Question.objects.filter(quiz=quiz, round__isnull=True).count()
+    total_questions = Question.objects.filter(quiz=quiz).count()
+
+    round_summaries = list(rounds_qs)
+    if unassigned_count:
+        class _Bucket:
+            id = None
+            name = "Unassigned"
+            description = ""
+            image = None
+            question_count = unassigned_count
+        round_summaries.append(_Bucket())
+
     # If host has started, force-redirect into the game
     if quiz.phase != PHASE_WAITING:
         url = reverse("quiz:play", args=[attempt.id])
@@ -94,14 +114,33 @@ def frag_lobby(request, attempt_id):
     return render(
         request,
         "quiz/_lobby_fragment.html",
-        {"quiz": quiz}  # template uses quiz.attempts.all dynamically
+        {"quiz": quiz, "round_summaries": round_summaries, "total_questions": total_questions,} 
     )
 
 def lobby(request, attempt_id):
     """Full lobby page — static shell around the live-updating fragment."""
     attempt = get_object_or_404(Attempt.objects.select_related("quiz"), id=attempt_id)
     quiz = attempt.quiz
-    return render(request, "quiz/lobby.html", {"quiz": quiz, "attempt": attempt})
+    rounds_qs = (
+        Round.objects
+        .filter(quiz=quiz)
+        .annotate(question_count=Count("questions"))
+        .order_by("order", "id")
+    )
+
+    unassigned_count = Question.objects.filter(quiz=quiz, round__isnull=True).count()
+    total_questions = Question.objects.filter(quiz=quiz).count()
+
+    round_summaries = list(rounds_qs)
+    if unassigned_count:
+        class _Bucket:
+            id = None
+            name = "Unassigned"
+            description = ""
+            image = None
+            question_count = unassigned_count
+        round_summaries.append(_Bucket())
+    return render(request, "quiz/lobby.html", {"quiz": quiz, "attempt": attempt, "round_summaries": round_summaries, "total_questions": total_questions,})
 
 def play(request, attempt_id):
     attempt = get_object_or_404(Attempt.objects.select_related("quiz"), id=attempt_id)
