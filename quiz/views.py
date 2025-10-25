@@ -1,4 +1,5 @@
 import random
+from django.db.models import Prefetch
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.cache import never_cache
 from django.http import HttpResponseBadRequest
@@ -21,7 +22,31 @@ def generate_silly_name():
     return f"{random.choice(ADJECTIVES)} {random.choice(ANIMALS)}"
 
 def home(request):
-    return render(request, "quiz/home.html")
+    # Last 10 finished quizzes, most recent first
+    quizzes = (
+        Quiz.objects.filter(phase=PHASE_FINISHED)
+        .order_by('-finished_at', '-created_at')[:10]
+        .prefetch_related(
+            Prefetch('attempts', queryset=Attempt.objects.order_by('-score', 'started_at'))
+        )
+    )
+
+    recent = []
+    for q in quizzes:
+        attempts = list(q.attempts.all())
+        if attempts:
+            top_score = attempts[0].score
+            winners = [a for a in attempts if a.score == top_score]
+        else:
+            top_score = 0
+            winners = []
+        recent.append({
+            "quiz": q,
+            "winners": winners,
+            "top_score": top_score,
+        })
+
+    return render(request, "quiz/home.html", {"recent": recent})
 
 def join_by_code(request):
     if request.method == "POST":

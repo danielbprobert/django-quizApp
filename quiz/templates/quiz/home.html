@@ -1,7 +1,44 @@
 {% extends "base.html" %}
+{% load humanize %} {# for naturaltime if you want it #}
 {% block title %}Home — Quiz{% endblock %}
+
 {% block content %}
   <article class="quiz-card">
     <a role="button" href="{% url 'quiz:join' %}">Join a quiz</a>
   </article>
+
+  <section class="recent-quizzes">
+    <h2>Recent quizzes</h2>
+
+    {% if recent %}
+      {% for item in recent %}
+        <article class="quiz-card">
+          <header class="quiz-card__header">
+            <h3>{{ item.quiz.title }}</h3>
+            <small>
+              Code: {{ item.quiz.access_code }}
+              · Finished {{ item.quiz.finished_at|date:"M j, Y H:i" }}
+              {# or: {{ item.quiz.finished_at|naturaltime }} #}
+            </small>
+          </header>
+
+          {% if item.winners %}
+            <p>
+              Winner{% if item.winners|length > 1 %}s{% endif %} — {{ item.top_score }} point{% if item.top_score != 1 %}s{% endif %}:
+              {% for a in item.winners %}
+                <span class="winner-pill">
+                  {% if a.avatar %}<span class="avatar">{{ a.avatar }}</span>{% endif %}
+                  {{ a.name|default:"Player " }}{% if not a.name %}{{ a.id }}{% endif %}
+                </span>{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            </p>
+          {% else %}
+            <p><em>No players for this quiz.</em></p>
+          {% endif %}
+        </article>
+      {% endfor %}
+    {% else %}
+      <p>No finished quizzes yet. Run one and they’ll show up here! 🎉</p>
+    {% endif %}
+  </section>
 {% endblock %}
