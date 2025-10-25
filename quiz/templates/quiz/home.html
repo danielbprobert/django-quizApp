@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load humanize %} {# for naturaltime if you want it #}
+{% load humanize %} 
 {% block title %}Home — Quiz{% endblock %}
 
 {% block content %}
@@ -17,8 +17,7 @@
             <h3>{{ item.quiz.title }}</h3>
             <small>
               Code: {{ item.quiz.access_code }}
-              · Finished {{ item.quiz.finished_at|date:"M j, Y H:i" }}
-              {# or: {{ item.quiz.finished_at|naturaltime }} #}
+              · Finished{{ item.quiz.finished_at|naturaltime }}
             </small>
           </header>
 
@@ -38,7 +37,7 @@
         </article>
       {% endfor %}
     {% else %}
-      <p>No finished quizzes yet. Run one and they’ll show up here! 🎉</p>
+      <p>No finished quizzes yet🎉</p>
     {% endif %}
   </section>
 {% endblock %}
