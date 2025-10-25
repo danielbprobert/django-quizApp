@@ -21,8 +21,8 @@ PHASE_CHOICES = [
     (PHASE_FINISHED, "Finished"),
 ]
 
-ANSWER_SECONDS = 15
-REVEAL_SECONDS = 15
+ANSWER_SECONDS = 10
+REVEAL_SECONDS = 10
 
 def generate_6_digit_code():
     return ''.join(random.choices(string.digits, k=6))

@@ -16,8 +16,7 @@
           <header class="quiz-card__header">
             <h3>{{ item.quiz.title }}</h3>
             <small>
-              Code: {{ item.quiz.access_code }}
-              · Finished{{ item.quiz.finished_at|naturaltime }}
+              {{ item.quiz.finished_at|naturaltime }}
             </small>
           </header>
 
