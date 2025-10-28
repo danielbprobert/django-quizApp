@@ -7,7 +7,24 @@ from django.db import models, transaction
 from django.utils import timezone
 from .image_utils import resize_and_optional_crop
 
-AVATARS = ["🦊","🐼","🐸","🐯","🐵","🦄","🐙","🐝","🦉","🐨","🐶","🐱","🦔","🦖","🐧","🐳"]
+AVATARS = [
+    "🎃",  # pumpkin
+    "👻",  # ghost
+    "🧙‍♀️",  # witch
+    "🧛‍♂️",  # vampire
+    "🧟‍♀️",  # zombie
+    "🧚‍♂️",  # dark fairy
+    "🦇",  # bat
+    "🕷️",  # spider
+    "🕸️",  # web
+    "💀",  # skull
+    "☠️",  # skull & crossbones
+    "🩸",  # blood drop
+    "🧝‍♂️",  # creepy elf
+    "🦉",  # owl (night creature)
+    "🐈‍⬛",  # black cat
+    "🕯️",  # candle
+]
 
 PHASE_WAITING = "WAITING"
 PHASE_ANSWER  = "ANSWER"

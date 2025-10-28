@@ -12,12 +12,15 @@ from django.urls import reverse
 from .models import Quiz, Round, Question, AnswerOption, Attempt, Answer, PHASE_WAITING, PHASE_ANSWER, PHASE_REVEAL, PHASE_FINISHED, AVATARS
 
 ADJECTIVES = [
-    "Swift","Bouncy","Sneaky","Cheerful","Curious","Zesty","Witty","Brave",
-    "Fizzing","Sunny","Cosmic","Nifty","Zippy","Gleeful","Lucky","Mighty"
+    "Spooky", "Creepy", "Wicked", "Ghostly", "Haunted", "Mysterious", "Eerie",
+    "Sinister", "Ghoulish", "Shadowy", "Cursed", "Bloody", "Frightful",
+    "Moonlit", "Twisted", "Dark", "Pumpkin", "Bony", "Phantom", "Howling"
 ]
+
 ANIMALS = [
-    "Fox","Panda","Frog","Tiger","Monkey","Unicorn","Octopus","Bee",
-    "Owl","Koala","Pup","Kitten","Hedgehog","Dino","Penguin","Whale"
+    "Bat", "Cat", "Crow", "Raven", "Owl", "Spider", "Toad", "Rat", "Wolf",
+    "Goblin", "Vampire", "Zombie", "Witch", "Mummy", "Skeleton", "Ghost",
+    "Pumpkin", "Werewolf", "Demon", "Reaper"
 ]
 
 def generate_silly_name():
