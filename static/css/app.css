@@ -74,7 +74,7 @@ a {
   text-decoration-color: var(--pico-primary-underline) !important;
 }
 a:hover {
-  color: var(--brand-on-primary) !important;
+  color: var(--brand-primary) !important;
   text-decoration-color: var(--brand-primary) !important;
 }
 
