@@ -115,7 +115,7 @@ button, [role="button"], .button, input[type="submit"] {
 .timer { height: 10px; background: var(--pico-muted-border-color); border-radius: 999px; overflow: hidden; }
 .timer > div { height: 100%; background: var(--brand-primary) !important; width: 100%; transition: width 1s linear; }
 
-.grid-2 { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-bottom:5rem}
+.grid-2 { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-bottom:2rem}
 .small { font-size: .9rem; opacity: .8; }
 .right { color: var(--pico-success, #198754); }
 .wrong { color: var(--pico-del, #C62828); }
