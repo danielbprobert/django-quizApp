@@ -2,7 +2,6 @@
 {% block title %}Lobby — {{ quiz.title }}{% endblock %}
 {% block content %}
   <article class="quiz-card">
-    <h2>{{ quiz.title }}</h2>
     <div id="players"
          hx-get="{% url 'quiz:frag_lobby' attempt.id %}"
          hx-trigger="load, every 1s"

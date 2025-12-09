@@ -9,42 +9,123 @@ from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
 
-from .models import Quiz, Round, Question, AnswerOption, Attempt, Answer, PHASE_WAITING, PHASE_ANSWER, PHASE_REVEAL, PHASE_FINISHED, AVATARS
+from .models import (
+    Quiz,
+    Round,
+    Question,
+    AnswerOption,
+    Attempt,
+    Answer,
+    PHASE_WAITING,
+    PHASE_ANSWER,
+    PHASE_REVEAL,
+    PHASE_ROUND_BREAK,
+    PHASE_FINISHED,
+    AVATARS,
+    SpecialClick,  # NEW
+)
 
 ADJECTIVES = [
-    "Jolly", "Festive", "Snowy", "Frosty", "Merry", "Cheery", "Cosy",
-    "Sparkling", "Twinkling", "Glistening", "Jingling", "Yuletide", "Wintery",
-    "Holly", "Tinsel-covered", "Starry", "Magical", "Gingerbread-scented",
-    "Candy-striped", "Glittery",
-    "Warm-hearted", "Fireside", "Joyous", "Mirthful", "Evergreen",
-    "North-Pole", "Reindeer-ready", "Present-packed", "Sleigh-bound",
-    "Snow-dusted", "Bell-ringing", "Carolling", "Cookie-baking", "Toy-making",
-    "Starlit", "Chimney-squeezing", "Snowflake-speckled", "Pine-scented",
-    "Mistletoe-kissed", "Peppermint"
+    "Jolly",
+    "Festive",
+    "Snowy",
+    "Frosty",
+    "Merry",
+    "Cheery",
+    "Cosy",
+    "Sparkling",
+    "Twinkling",
+    "Glistening",
+    "Jingling",
+    "Yuletide",
+    "Wintery",
+    "Holly",
+    "Tinsel-covered",
+    "Starry",
+    "Magical",
+    "Gingerbread-scented",
+    "Candy-striped",
+    "Glittery",
+    "Warm-hearted",
+    "Fireside",
+    "Joyous",
+    "Mirthful",
+    "Evergreen",
+    "North-Pole",
+    "Reindeer-ready",
+    "Present-packed",
+    "Sleigh-bound",
+    "Snow-dusted",
+    "Bell-ringing",
+    "Carolling",
+    "Cookie-baking",
+    "Toy-making",
+    "Starlit",
+    "Chimney-squeezing",
+    "Snowflake-speckled",
+    "Pine-scented",
+    "Mistletoe-kissed",
+    "Peppermint",
 ]
 
 ANIMALS = [
-    "Reindeer", "Robin", "Polar Bear", "Penguin", "Snow Hare", "Dove",
-    "Cardinal", "Husky", "Moose", "Elf", "Santa", "Mrs Claus", "Snowman",
-    "Nutcracker", "Gingerbread Man", "Angel", "Yeti", "Krampus",
-    "North Pole Gnome", "Holiday Pixie",
-    "Caribou", "Christmas Mouse", "Sleigh Dog", "Turtle Dove",
-    "Partridge", "Christmas Goose", "Candy Cane Dragon", "Snow Fox",
-    "Star Reindeer", "Bauble Troll", "Icicle Imp", "Gift Goblin",
-    "Mistletoe Fairy", "Toy Soldier", "Holly Sprite", "Frost Giant",
-    "Biscuit Elf", "Pudding Pixie", "Cocoa Bear", "Tinsel Cat"
+    "Reindeer",
+    "Robin",
+    "Polar Bear",
+    "Penguin",
+    "Snow Hare",
+    "Dove",
+    "Cardinal",
+    "Husky",
+    "Moose",
+    "Elf",
+    "Santa",
+    "Mrs Claus",
+    "Snowman",
+    "Nutcracker",
+    "Gingerbread Man",
+    "Angel",
+    "Yeti",
+    "Krampus",
+    "North Pole Gnome",
+    "Holiday Pixie",
+    "Caribou",
+    "Christmas Mouse",
+    "Sleigh Dog",
+    "Turtle Dove",
+    "Partridge",
+    "Christmas Goose",
+    "Candy Cane Dragon",
+    "Snow Fox",
+    "Star Reindeer",
+    "Bauble Troll",
+    "Icicle Imp",
+    "Gift Goblin",
+    "Mistletoe Fairy",
+    "Toy Soldier",
+    "Holly Sprite",
+    "Frost Giant",
+    "Biscuit Elf",
+    "Pudding Pixie",
+    "Cocoa Bear",
+    "Tinsel Cat",
 ]
+
 
 def generate_silly_name():
     return f"{random.choice(ADJECTIVES)} {random.choice(ANIMALS)}"
+
 
 def home(request):
     # Last 10 finished quizzes, most recent first
     quizzes = (
         Quiz.objects.filter(phase=PHASE_FINISHED)
-        .order_by('-finished_at', '-created_at')[:10]
+        .order_by("-finished_at", "-created_at")[:10]
         .prefetch_related(
-            Prefetch('attempts', queryset=Attempt.objects.order_by('-score', 'started_at'))
+            Prefetch(
+                "attempts",
+                queryset=Attempt.objects.order_by("-score", "started_at"),
+            )
         )
     )
 
@@ -57,13 +138,20 @@ def home(request):
         else:
             top_score = 0
             winners = []
-        recent.append({
-            "quiz": q,
-            "winners": winners,
-            "top_score": top_score,
-        })
+        recent.append(
+            {
+                "quiz": q,
+                "winners": winners,
+                "top_score": top_score,
+            }
+        )
 
-    return render(request, "quiz/home.html", {"recent": recent, "version": settings.VERSION})
+    return render(
+        request,
+        "quiz/home.html",
+        {"recent": recent, "version": settings.VERSION},
+    )
+
 
 def join_by_code(request):
     if request.method == "POST":
@@ -72,42 +160,64 @@ def join_by_code(request):
         avatar = (request.POST.get("avatar") or "").strip()
         quiz = Quiz.objects.filter(access_code=code, is_active=True).first()
         if not quiz:
-            return render(request, "quiz/join.html", {
-                "error": "Invalid or inactive code.",
-                "code": code, "name": name, "avatars": AVATARS, "suggested": generate_silly_name(),
-            })
+            return render(
+                request,
+                "quiz/join.html",
+                {
+                    "error": "Invalid or inactive code.",
+                    "code": code,
+                    "name": name,
+                    "avatars": AVATARS,
+                    "suggested": generate_silly_name(),
+                },
+            )
         with transaction.atomic():
-            attempt, created = Attempt.objects.get_or_create(quiz=quiz, name=name or "")
+            attempt, created = Attempt.objects.get_or_create(
+                quiz=quiz, name=name or ""
+            )
             if avatar and attempt.avatar != avatar:
                 attempt.avatar = avatar
                 attempt.save(update_fields=["avatar"])
         return redirect("quiz:lobby", attempt_id=attempt.id)
 
     # GET → show join form with suggested name and avatar choices
-    return render(request, "quiz/join.html", {
-        "suggested": generate_silly_name(),
-        "avatars": AVATARS,
-    })
+    return render(
+        request,
+        "quiz/join.html",
+        {
+            "suggested": generate_silly_name(),
+            "avatars": AVATARS,
+        },
+    )
+
 
 @never_cache
 def frag_silly_name(request):
     # Returns just an <input> pre-filled so HTMX can swap it in-place
-    return render(request, "quiz/_silly_name_input.html", {"suggested": generate_silly_name()})
+    return render(
+        request,
+        "quiz/_silly_name_input.html",
+        {"suggested": generate_silly_name()},
+    )
+
 
 @never_cache
 def frag_lobby(request, attempt_id):
-    attempt = get_object_or_404(Attempt.objects.select_related("quiz"), id=attempt_id)
+    attempt = get_object_or_404(
+        Attempt.objects.select_related("quiz"), id=attempt_id
+    )
     quiz = attempt.quiz
     quiz.maybe_tick()
 
     rounds_qs = (
-        Round.objects
-        .filter(quiz=quiz)
+        Round.objects.filter(quiz=quiz)
         .annotate(question_count=Count("questions"))
         .order_by("order", "id")
     )
 
-    unassigned_count = Question.objects.filter(quiz=quiz, round__isnull=True).count()
+    unassigned_count = Question.objects.filter(
+        quiz=quiz, round__isnull=True
+    ).count()
     total_questions = Question.objects.filter(quiz=quiz).count()
 
     round_summaries = list(rounds_qs)
@@ -118,6 +228,7 @@ def frag_lobby(request, attempt_id):
             description = ""
             image = None
             question_count = unassigned_count
+
         round_summaries.append(_Bucket())
 
     # If host has started, force-redirect into the game
@@ -129,21 +240,29 @@ def frag_lobby(request, attempt_id):
     return render(
         request,
         "quiz/_lobby_fragment.html",
-        {"quiz": quiz, "round_summaries": round_summaries, "total_questions": total_questions,} 
+        {
+            "quiz": quiz,
+            "round_summaries": round_summaries,
+            "total_questions": total_questions,
+        },
     )
+
 
 def lobby(request, attempt_id):
     """Full lobby page — static shell around the live-updating fragment."""
-    attempt = get_object_or_404(Attempt.objects.select_related("quiz"), id=attempt_id)
+    attempt = get_object_or_404(
+        Attempt.objects.select_related("quiz"), id=attempt_id
+    )
     quiz = attempt.quiz
     rounds_qs = (
-        Round.objects
-        .filter(quiz=quiz)
+        Round.objects.filter(quiz=quiz)
         .annotate(question_count=Count("questions"))
         .order_by("order", "id")
     )
 
-    unassigned_count = Question.objects.filter(quiz=quiz, round__isnull=True).count()
+    unassigned_count = Question.objects.filter(
+        quiz=quiz, round__isnull=True
+    ).count()
     total_questions = Question.objects.filter(quiz=quiz).count()
 
     round_summaries = list(rounds_qs)
@@ -154,19 +273,39 @@ def lobby(request, attempt_id):
             description = ""
             image = None
             question_count = unassigned_count
+
         round_summaries.append(_Bucket())
-    return render(request, "quiz/lobby.html", {"quiz": quiz, "attempt": attempt, "round_summaries": round_summaries, "total_questions": total_questions,})
+    return render(
+        request,
+        "quiz/lobby.html",
+        {
+            "quiz": quiz,
+            "attempt": attempt,
+            "round_summaries": round_summaries,
+            "total_questions": total_questions,
+        },
+    )
+
 
 def play(request, attempt_id):
-    attempt = get_object_or_404(Attempt.objects.select_related("quiz"), id=attempt_id)
+    attempt = get_object_or_404(
+        Attempt.objects.select_related("quiz"), id=attempt_id
+    )
     quiz = attempt.quiz
     quiz.maybe_tick()
     if quiz.phase == PHASE_WAITING:
         return redirect("quiz:lobby", attempt_id=attempt.id)
-    return render(request, "quiz/play.html", {"attempt": attempt, "quiz": quiz})
+    return render(
+        request,
+        "quiz/play.html",
+        {"attempt": attempt, "quiz": quiz},
+    )
+
 
 def frag_play(request, attempt_id):
-    attempt = get_object_or_404(Attempt.objects.select_related("quiz"), id=attempt_id)
+    attempt = get_object_or_404(
+        Attempt.objects.select_related("quiz"), id=attempt_id
+    )
     quiz = attempt.quiz
     quiz.maybe_tick()
     q = quiz.current_question()
@@ -184,42 +323,158 @@ def frag_play(request, attempt_id):
                 opt = q.options.get(id=option_id)
             except (AnswerOption.DoesNotExist, ValueError, TypeError):
                 return HttpResponseBadRequest("Invalid option.")
-            Answer.objects.create(attempt=attempt, question=q, selected_option=opt)
+            Answer.objects.create(
+                attempt=attempt, question=q, selected_option=opt
+            )
         # fall through to render updated panel
 
-    ctx = {"attempt": attempt, "quiz": quiz, "q": q, "idx": quiz.current_index, "total": total,
-           "remaining": quiz.phase_remaining()}
+    ctx = {
+        "attempt": attempt,
+        "quiz": quiz,
+        "q": q,
+        "idx": quiz.current_index,
+        "total": total,
+        "remaining": quiz.phase_remaining(),
+    }
 
     if quiz.phase == PHASE_ANSWER:
-        current_answer = Answer.objects.filter(attempt=attempt, question=q).first()
+        current_answer = Answer.objects.filter(
+            attempt=attempt, question=q
+        ).first()
         ctx["current_answer"] = current_answer
         template = "quiz/_play_answer.html"
 
     elif quiz.phase == PHASE_REVEAL:
         correct_opt = q.options.filter(is_correct=True).first()
-        answers = Answer.objects.filter(question=q, attempt__quiz=quiz).select_related("attempt","selected_option")
-        right = [a.attempt.name or f"Player {a.attempt_id}" for a in answers if a.selected_option_id == correct_opt.id]
-        wrong = [a.attempt.name or f"Player {a.attempt_id}" for a in answers if a.selected_option_id != correct_opt.id]
-        ctx.update({"correct_opt": correct_opt, "right": right, "wrong": wrong})
+        answers = Answer.objects.filter(
+            question=q, attempt__quiz=quiz
+        ).select_related("attempt", "selected_option")
+        right = [
+            a.attempt.name or f"Player {a.attempt_id}"
+            for a in answers
+            if a.selected_option_id == correct_opt.id
+        ]
+        wrong = [
+            a.attempt.name or f"Player {a.attempt_id}"
+            for a in answers
+            if a.selected_option_id != correct_opt.id
+        ]
+        ctx.update(
+            {
+                "correct_opt": correct_opt,
+                "right": right,
+                "wrong": wrong,
+            }
+        )
         template = "quiz/_play_reveal.html"
 
-    elif quiz.phase == PHASE_FINISHED:
-        attempts = list(Attempt.objects.filter(quiz=quiz).order_by("-score", "started_at"))
+    elif quiz.phase == PHASE_ROUND_BREAK:
+        # Build leaderboard during round break
+        attempts = list(
+            Attempt.objects.filter(quiz=quiz).order_by(
+                "-score", "started_at"
+            )
+        )
         top_score = attempts[0].score if attempts else 0
-        winners = [a for a in attempts if a.score == top_score] if attempts else []
+        winners = (
+            [a for a in attempts if a.score == top_score] if attempts else []
+        )
+
+        leaderboard = []
+        for a in attempts:
+            answered = Answer.objects.filter(attempt=a).count()
+            correct = Answer.objects.filter(
+                attempt=a, selected_option__is_correct=True
+            ).count()
+            pct = round((correct / answered) * 100) if answered else 0
+            leaderboard.append(
+                {
+                    "attempt": a,
+                    "answered": answered,
+                    "correct": correct,
+                    "pct": pct,
+                }
+            )
+
+        ctx.update(
+            {
+                "winners": winners,
+                "top_score": top_score,
+                "leaderboard": leaderboard,
+            }
+        )
+        template = "quiz/_play_round_break.html"
+
+    elif quiz.phase == PHASE_FINISHED:
+        attempts = list(
+            Attempt.objects.filter(quiz=quiz).order_by(
+                "-score", "started_at"
+            )
+        )
+        top_score = attempts[0].score if attempts else 0
+        winners = (
+            [a for a in attempts if a.score == top_score] if attempts else []
+        )
 
         # Build leaderboard with % correct (based on questions answered)
         leaderboard = []
         for a in attempts:
             answered = Answer.objects.filter(attempt=a).count()
-            correct = Answer.objects.filter(attempt=a, selected_option__is_correct=True).count()
+            correct = Answer.objects.filter(
+                attempt=a, selected_option__is_correct=True
+            ).count()
             pct = round((correct / answered) * 100) if answered else 0
-            leaderboard.append({"attempt": a, "answered": answered, "correct": correct, "pct": pct})
+            leaderboard.append(
+                {
+                    "attempt": a,
+                    "answered": answered,
+                    "correct": correct,
+                    "pct": pct,
+                }
+            )
 
-        ctx.update({"winners": winners, "top_score": top_score, "leaderboard": leaderboard})
+        ctx.update(
+            {
+                "winners": winners,
+                "top_score": top_score,
+                "leaderboard": leaderboard,
+            }
+        )
         template = "quiz/_play_finished.html"
 
     else:
         template = "quiz/_play_waiting.html"
 
     return render(request, template, ctx)
+
+
+# NEW: log special prize icon clicks
+@never_cache
+def special_click(request, attempt_id, question_id):
+    if request.method != "POST":
+        return HttpResponseBadRequest("POST required.")
+
+    attempt = get_object_or_404(
+        Attempt.objects.select_related("quiz"), id=attempt_id
+    )
+    quiz = attempt.quiz
+    question = get_object_or_404(
+        Question, id=question_id, quiz=quiz
+    )
+
+    # Only allow during answer phase on the current question
+    if quiz.phase != PHASE_ANSWER or quiz.current_question() != question:
+        return HttpResponseBadRequest("Special icon not available now.")
+
+    if not question.has_special_icon:
+        return HttpResponseBadRequest("No special icon on this question.")
+
+    # Log the click (one per attempt+question)
+    SpecialClick.objects.get_or_create(
+        quiz=quiz,
+        attempt=attempt,
+        question=question,
+    )
+
+    # No UI change required – just acknowledge
+    return HttpResponse("")

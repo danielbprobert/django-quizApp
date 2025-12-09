@@ -1,0 +1,61 @@
+<div>
+  <h2>Round complete</h2>
+  <h3>Current leaderboard</h3>
+  <ol>
+    {% for row in leaderboard %}
+      <li>
+        <span style="font-size:1.3rem">{{ row.attempt.avatar|default:"🎯" }}</span>
+        &nbsp;{{ row.attempt.name|default:'Player ' }}{% if not row.attempt.name %}{{ row.attempt.id }}{% endif %}
+        — {{ row.attempt.score }} pts
+        <span class="small">({{ row.pct }}% correct, {{ row.correct }}/{{ row.answered }} questions)</span>
+      </li>
+    {% empty %}
+      <li>No participants yet.</li>
+    {% endfor %}
+  </ol>
+
+  <div class="timer" aria-hidden="true"><div id="bar"></div></div>
+  <p class="small">
+    Next question starts in <strong id="count">{{ remaining }}</strong>s…
+  </p>
+
+  <script>
+    (function(){
+      // --- GLOBAL TIMER CLEAN-UP ---
+      if (window.quizInterval) {
+        clearInterval(window.quizInterval);
+        window.quizInterval = null;
+      }
+      if (window.quizTimeout) {
+        clearTimeout(window.quizTimeout);
+        window.quizTimeout = null;
+        window.quizTimeout = null;
+      }
+
+      var remaining = {{ remaining|default:0 }};
+      var bar = document.getElementById('bar');
+      var count = document.getElementById('count');
+
+      if (bar && remaining > 0) {
+        var s = remaining;
+        bar.style.width = '100%';
+        window.quizInterval = setInterval(function(){
+          s -= 1;
+          if (s <= 0) { s = 0; clearInterval(window.quizInterval); window.quizInterval = null; }
+          if (count) count.textContent = s;
+          if (remaining > 0) {
+            var pct = Math.max(0, (s / remaining) * 100);
+            bar.style.width = pct + '%';
+          }
+        }, 1000);
+      }
+
+      if (remaining > 0 && typeof htmx !== 'undefined') {
+        window.quizTimeout = setTimeout(function(){
+          htmx.ajax('GET', "{% url 'quiz:frag_play' attempt.id %}", '#panel');
+          window.quizTimeout = null;
+        }, remaining * 1000);
+      }
+    })();
+  </script>
+</div>

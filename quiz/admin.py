@@ -5,13 +5,14 @@ from django.forms.models import BaseInlineFormSet
 
 from .models import (
     Quiz,
-    Round,             # NEW
+    Round,
     Question,
     AnswerOption,
     Attempt,
     Answer,
     PHASE_ANSWER,
-    PHASE_WAITING
+    PHASE_WAITING,
+    SpecialClick,   # NEW
 )
 from .utils import broadcast_quiz
 
@@ -109,21 +110,32 @@ class AnswerOptionInline(admin.TabularInline):
         return qs.order_by("order")
 
 
-# --- NEW: Round inline under Quiz ---
+# --- Round inline under Quiz ---
 class RoundInline(admin.StackedInline):
     model = Round
     extra = 0
-    fields = ("order", "name", "description", "image")
+    fields = ("order", "name", "description", "image", "pause_seconds")  # UPDATED
     ordering = ("order", "id")
     show_change_link = True
 
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ("id", "quiz", "round", "order")
-    list_filter = ("quiz", "round")
+    list_display = ("id", "quiz", "round", "order", "has_special_icon")  # UPDATED
+    list_filter = ("quiz", "round", "has_special_icon")                  # UPDATED
     inlines = [AnswerOptionInline]
-    fields = ("quiz", "round", "order", "text", "image", "explanation")
+    fields = (
+        "quiz",
+        "round",
+        "order",
+        "text",
+        "image",
+        "explanation",
+        "answer_seconds",
+        "reveal_seconds",
+        "has_special_icon",   # NEW
+        "special_icon",       # NEW
+    )
 
     # Limit the "round" choices to rounds belonging to the selected quiz
     def get_form(self, request, obj=None, **kwargs):
@@ -154,13 +166,12 @@ class QuizAdmin(admin.ModelAdmin):
     readonly_fields = ("access_code", "phase", "current_index", "phase_started_at", "started_at", "finished_at")
     search_fields = ("title", "access_code")
     actions = [start_quiz, reset_quiz]
-    inlines = [RoundInline]   # <-- create/manage rounds directly under a quiz
+    inlines = [RoundInline]   # create/manage rounds directly under a quiz
 
 
-# (Optional) Keep Round visible in admin on its own page too
 @admin.register(Round)
 class RoundAdmin(admin.ModelAdmin):
-    list_display = ("name", "quiz", "order")
+    list_display = ("name", "quiz", "order", "pause_seconds")  # UPDATED
     list_filter = ("quiz",)
     search_fields = ("name",)
 
@@ -174,3 +185,43 @@ class AttemptAdmin(admin.ModelAdmin):
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
     list_display = ("attempt", "question", "selected_option")
+
+# --- Custom filter to show only questions that have special icons ---
+class SpecialQuestionFilter(admin.SimpleListFilter):
+    title = "Question (special only)"
+    parameter_name = "question"
+
+    def lookups(self, request, model_admin):
+        qs = (
+            Question.objects
+            .filter(has_special_icon=True)
+            .order_by("quiz__title", "order")
+        )
+        return [(q.id, f"{q.quiz.title} – Q{q.id}") for q in qs]
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value:
+            return queryset.filter(question_id=value)
+        return queryset
+
+
+
+@admin.register(SpecialClick)
+class SpecialClickAdmin(admin.ModelAdmin):
+    list_display = ("quiz", "question", "player_name", "attempt", "clicked_at_full")
+    list_filter = ("quiz", SpecialQuestionFilter)
+    search_fields = ("attempt__name", "quiz__title")
+    date_hierarchy = "clicked_at"
+
+    def player_name(self, obj):
+        if obj.attempt.name:
+            return obj.attempt.name
+        return f"Player {obj.attempt_id}"
+    player_name.short_description = "Player"
+
+    def clicked_at_full(self, obj):
+        # Force full timestamp including seconds
+        return obj.clicked_at.strftime("%Y-%m-%d %H:%M:%S")
+    clicked_at_full.short_description = "Clicked at"
+    clicked_at_full.admin_order_field = "clicked_at"

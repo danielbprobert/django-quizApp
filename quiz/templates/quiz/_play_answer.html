@@ -1,5 +1,5 @@
 <div>
-  <h3>Question {{ idx|add:1 }} / {{ total }}</h3>
+  <h3>Question {{ idx|add:1 }}</h3>
 
   <div class="timer" aria-hidden="true"><div id="bar"></div></div>
   <p class="small">Time left: <strong id="count">{{ remaining }}</strong>s</p>
@@ -9,6 +9,51 @@
     <div class="question-media">
       <img src="{{ q.image.url }}" alt="Question image">
     </div>
+  {% endif %}
+
+  {# --- Special prize icon (only if enabled on this question) --- #}
+  {% if q.has_special_icon and q.special_icon %}
+    <form
+      id="special-form"
+      method="post"
+      hx-post="{% url 'quiz:special_click' attempt.id q.id %}"
+      hx-swap="none"
+      style="display:inline;"
+    >
+      {% csrf_token %}
+      <button
+        class="special-icon"
+        type="submit"
+        aria-label="Special prize"
+        onclick="this.style.display='none';"
+      >
+        {{ q.special_icon }}
+      </button>
+    </form>
+
+    <style>
+      .special-icon {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        font-size: 2.5rem;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        animation: special-drift 2s ease-in-out infinite alternate;
+        filter: drop-shadow(0 0 6px rgba(0,0,0,.4));
+        z-index: 20;
+      }
+
+      @keyframes special-drift {
+        from { transform: translateY(0); }
+        to   { transform: translateY(-8px); }
+      }
+
+      .special-icon:active {
+        transform: scale(0.9);
+      }
+    </style>
   {% endif %}
 
   <form id="answer-form"
@@ -57,17 +102,27 @@
         });
       });
 
+      // --- GLOBAL TIMER CLEAN-UP ---
+      if (window.quizInterval) {
+        clearInterval(window.quizInterval);
+        window.quizInterval = null;
+      }
+      if (window.quizTimeout) {
+        clearTimeout(window.quizTimeout);
+        window.quizTimeout = null;
+      }
+
       // countdown + single refresh when the phase ends
       var remaining = {{ remaining|default:0 }};
       var bar = document.getElementById('bar');
       var count = document.getElementById('count');
 
-      if (bar) {
+      if (bar && remaining > 0) {
         var s = remaining;
         bar.style.width = '100%';
-        var iv = setInterval(function(){
+        window.quizInterval = setInterval(function(){
           s -= 1;
-          if (s <= 0) { s = 0; clearInterval(iv); }
+          if (s <= 0) { s = 0; clearInterval(window.quizInterval); window.quizInterval = null; }
           if (count) count.textContent = s;
           if (remaining > 0) {
             var pct = Math.max(0, (s / remaining) * 100);
@@ -76,9 +131,10 @@
         }, 1000);
       }
 
-      if (remaining > 0) {
-        setTimeout(function(){
+      if (remaining > 0 && typeof htmx !== 'undefined') {
+        window.quizTimeout = setTimeout(function(){
           htmx.ajax('GET', "{% url 'quiz:frag_play' attempt.id %}", '#panel');
+          window.quizTimeout = null;
         }, remaining * 1000);
       }
     })();
