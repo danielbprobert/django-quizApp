@@ -1,31 +1,32 @@
 /* =========================
-   BRAND TOKENS (EDIT THESE)
+   CHRISTMAS BRAND TOKENS
    ========================= */
 :root {
-  /* Fonts */
-  --brand-font-headings: "YOUR_HEADING_FONT", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  --brand-font-body:     "YOUR_BODY_FONT",    system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  /* Fonts (swap these for your own / Google Fonts if you like) */
+  --brand-font-headings: "Mountains of Christmas", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --brand-font-body:     "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
-  /* Colors */
-  --brand-primary:       #1a455f;     /* e.g. #5A2BBF */
-  --brand-text:          #111111;
-  --brand-bg:            #ffffff;
-  --brand-muted:         #E8E8F0;
+  /* Colours – warm Christmas reds, greens, and golds */
+  --brand-primary:       #c62828;     /* rich Christmas red */
+  --brand-primary-dark:  #8e0000;     /* for hover/focus */
+  --brand-accent:        #2e7d32;     /* evergreen green */
+  --brand-gold:          #ffb300;     /* warm golden accent */
+
+  --brand-text:          #1a1c24;     /* dark neutral text */
+  --brand-bg:            #0b1724;     /* night-sky background */
+  --brand-muted:         #e5edf5;     /* soft snow-grey for borders */
   --brand-on-primary:    #ffffff;
-
-  /* Optional accent you can use in custom components */
-  --brand-accent:        #DC325F;
 }
 
 /* ======================================================
-   MAP TOKENS → PICO VARIABLES (higher specificity block)
+   MAP TOKENS → PICO VARIABLES (light theme base)
    ====================================================== */
 :root,
 [data-theme="light"] {
   /* Typography */
   --pico-font-family: var(--brand-font-body);
 
-  /* Colors used by Pico components */
+  /* Pico colours */
   --pico-color:                 var(--brand-text);
   --pico-background-color:      var(--brand-bg);
   --pico-primary:               var(--brand-primary);
@@ -37,7 +38,7 @@
 }
 
 /* ==================
-   GLOBAL STYLES
+   GLOBAL LAYOUT
    ================== */
 html, body {
   height: 100%;
@@ -48,6 +49,38 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  color: var(--brand-text);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.04), transparent 55%),
+    radial-gradient(circle at bottom right, rgba(255, 215, 130, 0.12), transparent 60%),
+    linear-gradient(180deg, #0b1724, #10253a 40%, #0b1724);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Soft “falling snow” overlay for a subtle Christmas feel */
+body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  opacity: 0.35;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.7) 0, transparent 55px),
+    radial-gradient(circle, rgba(255,255,255,0.35) 0, transparent 45px),
+    radial-gradient(circle, rgba(255,255,255,0.25) 0, transparent 35px);
+  background-size: 260px 260px, 220px 220px, 180px 180px;
+  animation: christmasSnowDrift 28s linear infinite;
+  z-index: -1;
+}
+
+@keyframes christmasSnowDrift {
+  from {
+    transform: translate3d(0, -10px, 0);
+  }
+  to {
+    transform: translate3d(0, 10px, 0);
+  }
 }
 
 main {
@@ -63,101 +96,383 @@ footer {
    ================== */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--brand-font-headings) !important;
-  color: var(--brand-text);
+  color: #ffffff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  letter-spacing: 0.03em;
 }
 
-.img-fluid { display:block; max-width:100%; height:auto; }
+h1 {
+  font-size: 2.3rem;
+}
 
-/* Links pick up brand color clearly */
+h1::after {
+  content: " 🎄";
+  font-size: 1.6rem;
+}
+
+p, span, label, li {
+  color: var(--pico-muted-color);
+}
+
+.img-fluid {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Links with a festive underline */
 a {
-  color: var(--brand-primary) !important;
+  color: var(--brand-gold) !important;
   text-decoration-color: var(--pico-primary-underline) !important;
+  text-underline-offset: 2px;
 }
 a:hover {
-  color: var(--brand-primary) !important;
-  text-decoration-color: var(--brand-primary) !important;
+  color: var(--brand-gold) !important;
+  text-decoration-color: var(--brand-gold) !important;
 }
 
-/* Buttons */
-button, [role="button"], .button, input[type="submit"] {
-  background-color: var(--brand-primary) !important;
-  border-color: var(--brand-primary) !important;
+/* ==================
+   BUTTONS
+   ================== */
+button,
+[role="button"],
+.button,
+input[type="submit"] {
+  background-image: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-dark) 50%, var(--brand-accent) 100%);
+  background-size: 180% 180%;
+  background-position: 0% 50%;
+  border-color: transparent !important;
   color: var(--brand-on-primary) !important;
   border-radius: 999px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding-inline: 1.6rem;
+  transition: background-position 0.25s ease, transform 0.08s ease, box-shadow 0.2s ease;
+}
+
+button:hover,
+[role="button"]:hover,
+.button:hover,
+input[type="submit"]:hover {
+  background-position: 100% 50%;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+}
+
+button:active,
+[role="button"]:active,
+.button:active,
+input[type="submit"]:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 /* =========
    QUIZ UI
    ========= */
-.brand { letter-spacing: .5px; font-weight: 700; color: var(--brand-primary); }
+.brand {
+  letter-spacing: .5px;
+  font-weight: 800;
+  color: var(--brand-gold);
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.brand::before {
+  content: "⭐";
+  font-size: 1.1rem;
+}
 
 .quiz-card {
-  border: 1px solid var(--pico-muted-border-color);
-  border-radius: 12px;
-  padding: 1rem;
-  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--brand-primary) 25%, var(--brand-muted));
+  border-radius: 16px;
+  padding: 1.4rem 1.4rem 1.6rem;
+  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.92), #f8fbff 60%);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.18);
+  position: relative;
+  overflow: hidden;
 }
 
+/* subtle decorative border shimmer */
+.quiz-card::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(198, 40, 40, 0.0),
+    rgba(198, 40, 40, 0.35),
+    rgba(255, 179, 0, 0.45),
+    rgba(46, 125, 50, 0.35),
+    rgba(198, 40, 40, 0.0)
+  );
+  opacity: 0.4;
+  mix-blend-mode: screen;
+  z-index: -1;
+}
+
+/* Question text inside cards */
+.quiz-card h2,
+.quiz-card h3 {
+  color: var(--brand-primary);
+}
+
+/* Answer options – card style with festive hover/selection */
 .option {
   border: 1px solid var(--pico-muted-border-color);
-  border-radius: 12px;
-  padding: .75rem;
-  transition: transform .08s ease, border-color .2s ease, box-shadow .2s ease;
+  border-radius: 14px;
+  padding: .85rem .9rem;
+  transition:
+    transform .08s ease,
+    border-color .2s ease,
+    box-shadow .2s ease,
+    background-color .18s ease;
   cursor: pointer;
+  background: rgba(255, 255, 255, 0.92);
+  display: block;
 }
-.option:hover { transform: translateY(-1px); }
-.option input[type="radio"] { margin-right: .5rem; }
+
+.option:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  background: linear-gradient(135deg, #ffffff 0%, #f9f3ff 50%, #fff8e1 100%);
+}
+
+.option input[type="radio"] {
+  margin-right: .5rem;
+  vertical-align: middle;
+}
+
 .option.selected {
   border-color: var(--brand-primary) !important;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-primary) 25%, transparent) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-primary) 30%, transparent) !important;
+  background: linear-gradient(135deg, rgba(198, 40, 40, 0.04), rgba(255, 179, 0, 0.09));
 }
 
-.timer { height: 10px; background: var(--pico-muted-border-color); border-radius: 999px; overflow: hidden; }
-.timer > div { height: 100%; background: var(--brand-primary) !important; width: 100%; transition: width 1s linear; }
+/* Timer bar – candy cane style */
+.timer {
+  height: 10px;
+  background: repeating-linear-gradient(
+    45deg,
+    #ffffff 0,
+    #ffffff 6px,
+    #ffd6d6 6px,
+    #ffd6d6 12px
+  );
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
 
-.grid-2 { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-bottom:2rem}
-.small { font-size: .9rem; opacity: .8; }
-.right { color: var(--pico-success, #198754); }
-.wrong { color: var(--pico-del, #C62828); }
+.timer > div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--brand-primary), var(--brand-gold));
+  width: 100%;
+  transition: width 1s linear;
+}
 
+/* Grid layout for options / content */
+.grid-2 {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  margin-bottom: 2rem;
+}
+
+.small {
+  font-size: .9rem;
+  opacity: .85;
+}
+
+.right {
+  color: #2e7d32; /* evergreen for correct */
+}
+
+.wrong {
+  color: #c62828; /* Christmas red for incorrect */
+}
+
+/* Panel tint – like a frosted glass info box */
 .panel-tint {
-  background: color-mix(in srgb, var(--brand-primary) 6%, white);
-  border: 1px solid color-mix(in srgb, var(--brand-primary) 18%, var(--brand-muted));
+  background: color-mix(in srgb, var(--brand-primary) 12%, #f4f8ff);
+  border: 1px solid color-mix(in srgb, var(--brand-primary) 20%, var(--brand-muted));
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
 }
 
+/* Question media – maintain from your original, with subtle tweak */
 .question-media {
   width: 100%;
-  max-width: 720px;           /* cap large questions */
-  aspect-ratio: 16 / 9;       /* tweak if you prefer 4/3 or 1/1 */
-  border-radius: 12px;
+  max-width: 720px;
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
   overflow: hidden;
-  background: #f6f7fb;        /* subtle backdrop */
+  background: radial-gradient(circle at top, #ffffff, #e3f2fd);
   border: 1px solid var(--pico-muted-border-color);
   margin: .5rem 0 1rem;
 }
+
 .question-media > img {
   width: 100%;
   height: 100%;
-  object-fit: contain;         /* show entire question image without cropping */
+  object-fit: contain;
 }
 
-/* Option cards: consistent size; crop to fill to avoid layout jumps */
+/* Option cards containing images */
 .option .media {
   width: 100%;
-  aspect-ratio: 4 / 3;         /* adjust to your taste (1/1, 16/9, etc.) */
+  aspect-ratio: 4 / 3;
   border-radius: 10px;
   overflow: hidden;
   background: #f6f7fb;
   border: 1px solid var(--pico-muted-border-color);
   margin-top: .5rem;
 }
+
 .option .media > img {
   width: 100%;
   height: 100%;
-  object-fit: cover;           /* crop edges to keep uniform tile size */
+  object-fit: cover;
 }
 
-/* Make the whole option label a block to prevent text/image overlap */
-.option { display:block; }
-.option label { display:block; width:100%; }
-.option input[type="radio"] { margin-right:.5rem; vertical-align: middle; }
+/* Ensure option label is a clean block */
+.option label {
+  display: block;
+  width: 100%;
+}
+
+/* =============
+   AVATAR GRID
+   ============= */
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* 6 per row */
+  gap: .75rem;
+}
+
+/* Hide radio button */
+.avatar-option input[type="radio"] {
+  display: none;
+}
+
+/* Avatar tile */
+.avatar-option span {
+  font-size: 2rem;
+  padding: .6rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform .12s ease, background .18s ease, box-shadow .18s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.16);
+}
+
+/* When selected – golden glow */
+.avatar-option input[type="radio"]:checked + span {
+  background: radial-gradient(circle at top, #fff8e1, #ffe082);
+  transform: scale(1.12);
+  outline: 2px solid var(--brand-gold);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.28),
+    0 0 14px rgba(255, 193, 7, 0.7);
+}
+
+/* Hover feedback */
+.avatar-option:hover span {
+  transform: scale(1.08);
+}
+
+/* ============
+   NAME INPUT
+   ============ */
+#name-input {
+  width: 25rem;
+  max-width: 100%;
+  padding: .5rem .8rem;
+  font-size: 1rem;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, var(--brand-primary) 40%, rgba(255, 255, 255, 0.8));
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--brand-text);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: border-color .18s ease, box-shadow .18s ease, transform .08s ease;
+}
+
+#name-input::placeholder {
+  color: rgba(0, 0, 0, 0.35);
+}
+
+#name-input:focus {
+  outline: none;
+  border-color: var(--brand-gold);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--brand-gold) 55%, transparent),
+    0 6px 18px rgba(0, 0, 0, 0.35);
+  transform: translateY(-1px);
+}
+
+/* Players grid – 4 per row on normal screens */
+.players-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)); /* 4 per row */
+  gap: 1rem;
+}
+
+/* Responsive: fewer per row on smaller screens */
+@media (max-width: 960px) {
+  .players-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .players-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .players-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Player cards */
+.player-card {
+  border-radius: 14px;
+  padding: .75rem .9rem;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  text-align: center;
+}
+
+.player-avatar {
+  font-size: 2rem;
+}
+
+.player-name {
+  font-weight: 600;
+  color: var(--brand-primary);
+}
+
+.player-tag {
+  font-size: .8rem;
+  padding: .15rem .5rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--brand-gold), #ffe082);
+  color: #5d3b00;
+}

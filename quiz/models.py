@@ -8,22 +8,60 @@ from django.utils import timezone
 from .image_utils import resize_and_optional_crop
 
 AVATARS = [
-    "🎃",  # pumpkin
-    "👻",  # ghost
-    "🧙‍♀️",  # witch
-    "🧛‍♂️",  # vampire
-    "🧟‍♀️",  # zombie
-    "🧚‍♂️",  # dark fairy
-    "🦇",  # bat
-    "🕷️",  # spider
-    "🕸️",  # web
-    "💀",  # skull
-    "☠️",  # skull & crossbones
-    "🩸",  # blood drop
-    "🧝‍♂️",  # creepy elf
-    "🦉",  # owl (night creature)
-    "🐈‍⬛",  # black cat
+    "🎄",  # Christmas tree
+    "🎅",  # Santa Claus
+    "🤶",  # Mrs Claus
+    "🧑‍🎄",  # festive person/Santa variant
+    "🦌",  # reindeer
+    "🧝‍♀️",  # Christmas elf (female)
+    "🧝‍♂️",  # Christmas elf (male)
+    "☃️",  # snowman
+    "⛄",  # snowman without snow
+    "❄️",  # snowflake
+    "🌟",  # shining star
+    "✨",  # sparkles
     "🕯️",  # candle
+    "🎁",  # present
+    "🧦",  # stocking
+    "🧣",  # scarf
+    "🧤",  # mittens
+    "🧊",  # ice block
+    "🎀",  # ribbon/bow
+    "🍪",  # cookie (Santa snack)
+    "🥛",  # milk (for Santa)
+    "🍫",  # hot chocolate theme
+    "🍰",  # yule cake slice
+    "🍬",  # sweet
+    "🍭",  # candy
+    "🍫",  # chocolate bar
+    "🍩",  # festive doughnut
+    "🫖",  # warm winter tea
+    "🧁",  # cupcake (festive)
+    "🧇",  # warm winter waffles
+    "🦙",  # winter llama
+    "🦊",  # snowy fox
+    "🦢",  # swan (12 days of Christmas)
+    "🕊️",  # peaceful dove
+    "🪽",  # angel wings
+    "👼",  # Christmas angel
+    "🎶",  # carols/music
+    "🎵",  # musical note
+    "🔔",  # jingle bell
+    "🛷",  # sleigh
+    "🏔️",  # snowy mountains
+    "🏠",  # warm festive home
+    "🛍️",  # Christmas shopping bags
+    "🏡",  # snow-covered house
+    "🌲",  # evergreen
+    "🏙️",  # snowy city
+    "⛪",  # Christmas church
+    "🕯️",  # Advent candle
+    "🧨",  # festive sparkle pop
+    "🪩",  # glitter ball
+    "🎠",  # festive fairground horse
+    "🎆",  # fireworks (New Year)
+    "🎇",  # sparkler
+    "🥂",  # New Year celebration toast
 ]
 
 PHASE_WAITING = "WAITING"
@@ -38,8 +76,8 @@ PHASE_CHOICES = [
     (PHASE_FINISHED, "Finished"),
 ]
 
-ANSWER_SECONDS = 10
-REVEAL_SECONDS = 10
+ANSWER_SECONDS = 40
+REVEAL_SECONDS = 40
 
 def generate_6_digit_code():
     return ''.join(random.choices(string.digits, k=6))

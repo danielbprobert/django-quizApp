@@ -35,9 +35,9 @@
 
       <fieldset>
         <legend>Choose your avatar</legend>
-        <div class="grid-2">
+        <div class="avatar-grid">
           {% for emo in avatars %}
-            <label class="option" style="display:flex;gap:.5rem;align-items:center;justify-content:center;font-size:1.6rem">
+            <label class="avatar-option">
               <input type="radio" name="avatar" value="{{ emo }}" {% if forloop.first %}checked{% endif %}>
               <span>{{ emo }}</span>
             </label>

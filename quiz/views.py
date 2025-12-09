@@ -12,15 +12,27 @@ from django.urls import reverse
 from .models import Quiz, Round, Question, AnswerOption, Attempt, Answer, PHASE_WAITING, PHASE_ANSWER, PHASE_REVEAL, PHASE_FINISHED, AVATARS
 
 ADJECTIVES = [
-    "Spooky", "Creepy", "Wicked", "Ghostly", "Haunted", "Mysterious", "Eerie",
-    "Sinister", "Ghoulish", "Shadowy", "Cursed", "Bloody", "Frightful",
-    "Moonlit", "Twisted", "Dark", "Pumpkin", "Bony", "Phantom", "Howling"
+    "Jolly", "Festive", "Snowy", "Frosty", "Merry", "Cheery", "Cosy",
+    "Sparkling", "Twinkling", "Glistening", "Jingling", "Yuletide", "Wintery",
+    "Holly", "Tinsel-covered", "Starry", "Magical", "Gingerbread-scented",
+    "Candy-striped", "Glittery",
+    "Warm-hearted", "Fireside", "Joyous", "Mirthful", "Evergreen",
+    "North-Pole", "Reindeer-ready", "Present-packed", "Sleigh-bound",
+    "Snow-dusted", "Bell-ringing", "Carolling", "Cookie-baking", "Toy-making",
+    "Starlit", "Chimney-squeezing", "Snowflake-speckled", "Pine-scented",
+    "Mistletoe-kissed", "Peppermint"
 ]
 
 ANIMALS = [
-    "Bat", "Cat", "Crow", "Raven", "Owl", "Spider", "Toad", "Rat", "Wolf",
-    "Goblin", "Vampire", "Zombie", "Witch", "Mummy", "Skeleton", "Ghost",
-    "Pumpkin", "Werewolf", "Demon", "Reaper"
+    "Reindeer", "Robin", "Polar Bear", "Penguin", "Snow Hare", "Dove",
+    "Cardinal", "Husky", "Moose", "Elf", "Santa", "Mrs Claus", "Snowman",
+    "Nutcracker", "Gingerbread Man", "Angel", "Yeti", "Krampus",
+    "North Pole Gnome", "Holiday Pixie",
+    "Caribou", "Christmas Mouse", "Sleigh Dog", "Turtle Dove",
+    "Partridge", "Christmas Goose", "Candy Cane Dragon", "Snow Fox",
+    "Star Reindeer", "Bauble Troll", "Icicle Imp", "Gift Goblin",
+    "Mistletoe Fairy", "Toy Soldier", "Holly Sprite", "Frost Giant",
+    "Biscuit Elf", "Pudding Pixie", "Cocoa Bear", "Tinsel Cat"
 ]
 
 def generate_silly_name():
